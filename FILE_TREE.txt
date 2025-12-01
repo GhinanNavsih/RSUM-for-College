@@ -1,0 +1,192 @@
+RSUM/
+│
+├── 📄 package.json                 # Project dependencies & scripts
+├── 📄 tsconfig.json               # TypeScript configuration
+├── 📄 tailwind.config.ts          # Tailwind CSS configuration
+├── 📄 postcss.config.mjs          # PostCSS configuration
+├── 📄 next.config.mjs             # Next.js configuration
+├── 📄 middleware.ts               # Next.js middleware for route protection
+├── 📄 .gitignore                  # Git ignore rules
+├── 📄 .env.local.example          # Example environment variables
+├── 📄 .env.local                  # Your Firebase credentials (DO NOT COMMIT!)
+├── 📄 .eslintrc.json             # ESLint configuration
+│
+├── 📖 README.md                   # Main documentation
+├── 📖 SETUP_GUIDE.md             # Step-by-step setup instructions
+├── 📖 ARCHITECTURE.md            # System architecture documentation
+├── 📖 QUICK_REFERENCE.md         # Quick reference guide
+├── 📖 FILE_TREE.txt              # This file
+│
+├── 📁 app/                        # Next.js 14 App Router
+│   ├── 📄 layout.tsx             # Root layout (includes AuthProvider)
+│   ├── 📄 page.tsx               # Home page (redirects based on role)
+│   ├── 📄 globals.css            # Global CSS styles
+│   │
+│   ├── 📁 login/                 # Authentication
+│   │   └── 📄 page.tsx          # Login page
+│   │
+│   ├── 📁 patients/              # Patient Management Module
+│   │   ├── 📄 page.tsx          # List & search all patients
+│   │   │
+│   │   ├── 📁 new/
+│   │   │   └── 📄 page.tsx     # Create new patient form
+│   │   │
+│   │   └── 📁 [patientId]/
+│   │       └── 📄 page.tsx     # Patient detail + visit history
+│   │
+│   ├── 📁 igd/                   # IGD Module (Emergency Department)
+│   │   ├── 📄 page.tsx          # IGD dashboard (in-progress visits)
+│   │   │
+│   │   ├── 📁 new-visit/
+│   │   │   └── 📄 page.tsx     # Create new visit
+│   │   │
+│   │   └── 📁 visit/
+│   │       └── 📁 [visitId]/
+│   │           └── 📄 page.tsx # Visit detail (add services & prescriptions)
+│   │
+│   ├── 📁 kasir/                 # Cashier Module
+│   │   ├── 📄 page.tsx          # List unpaid visits
+│   │   │
+│   │   └── 📁 visit/
+│   │       └── 📁 [visitId]/
+│   │           └── 📄 page.tsx # Payment processing & receipt
+│   │
+│   ├── 📁 farmasi/               # Pharmacy Module
+│   │   ├── 📄 page.tsx          # List pending prescriptions
+│   │   │
+│   │   └── 📁 visit/
+│   │       └── 📁 [visitId]/
+│   │           └── 📄 page.tsx # Dispense prescriptions
+│   │
+│   └── 📁 admin/                 # Admin Module
+│       └── 📁 users/
+│           └── 📄 page.tsx      # User management & role assignment
+│
+├── 📁 components/                # Reusable UI Components
+│   ├── 📄 Button.tsx            # Button component (primary, secondary, danger, success)
+│   ├── 📄 Card.tsx              # Card container component
+│   ├── 📄 Input.tsx             # Form input component with label & error
+│   ├── 📄 Select.tsx            # Dropdown select component
+│   ├── 📄 Badge.tsx             # Status badge component (colored labels)
+│   ├── 📄 LoadingSpinner.tsx   # Loading spinner indicator
+│   └── 📄 Navbar.tsx            # Navigation bar (role-based menu)
+│
+├── 📁 contexts/                  # React Context Providers
+│   └── 📄 AuthContext.tsx       # Authentication context & hooks
+│                                 # - useAuth() hook
+│                                 # - signIn(), signOut()
+│                                 # - user, appUser, loading states
+│
+├── 📁 lib/                       # Library & Utility Functions
+│   ├── 📄 firebase.ts           # Firebase initialization
+│   │                             # - Initialize Firebase app
+│   │                             # - Export auth & db instances
+│   │
+│   ├── 📄 firestore.ts          # Firestore CRUD operations
+│   │                             # Patient functions:
+│   │                             # - createPatient()
+│   │                             # - getPatient()
+│   │                             # - getAllPatients()
+│   │                             # - updatePatient()
+│   │                             # - searchPatients()
+│   │                             #
+│   │                             # Visit functions:
+│   │                             # - createVisit()
+│   │                             # - getVisit()
+│   │                             # - updateVisit()
+│   │                             # - getVisitsByPatient()
+│   │                             # - getVisitsByStatus()
+│   │                             # - getUnpaidVisits()
+│   │                             # - getPendingDispensation()
+│   │                             #
+│   │                             # User functions:
+│   │                             # - createUser()
+│   │                             # - getUser()
+│   │                             # - getAllUsers()
+│   │                             # - updateUserRole()
+│   │                             # - setUserData()
+│   │
+│   └── 📄 utils.ts              # Utility helper functions
+│                                 # - formatCurrency() - Rupiah format
+│                                 # - formatDate() - Indonesian date
+│                                 # - formatDateTime()
+│                                 # - calculateAge()
+│                                 # - generateVisitDisplayId()
+│                                 # - formatPhone()
+│                                 # - getInitials()
+│                                 # - getRoleDisplayName()
+│                                 # - getStatusBadge()
+│
+└── 📁 types/                     # TypeScript Type Definitions
+    └── 📄 models.ts             # Data model interfaces
+                                  # - Patient
+                                  # - Visit
+                                  # - VisitService
+                                  # - VisitPrescription
+                                  # - AppUser
+                                  # - UserRole
+                                  # - InsuranceType
+                                  # - VisitType
+                                  # - VisitStatus
+                                  # - PaymentStatus
+                                  # - DispensationStatus
+
+─────────────────────────────────────────────────────────────
+
+📊 Statistics:
+- Total Pages: 15+ pages
+- Reusable Components: 7 components
+- Context Providers: 1 (AuthContext)
+- Firestore Collections: 3 (patients, visits, users)
+- User Roles: 4 (admin, igd, kasir, farmasi)
+- CRUD Operations: 20+ functions
+
+─────────────────────────────────────────────────────────────
+
+🎯 Key Entry Points:
+
+1. App Entry:
+   app/layout.tsx → Wraps everything with AuthProvider
+
+2. Homepage:
+   app/page.tsx → Redirects based on user role
+
+3. Authentication:
+   contexts/AuthContext.tsx → Manages auth state
+   app/login/page.tsx → Login form
+
+4. Database Operations:
+   lib/firestore.ts → All CRUD operations
+
+5. Type Safety:
+   types/models.ts → TypeScript interfaces
+
+─────────────────────────────────────────────────────────────
+
+📝 Notes:
+
+- All pages in app/ directory use "use client" directive
+- [patientId] and [visitId] are dynamic route parameters
+- Components are all functional components using React hooks
+- Firebase operations are async/await
+- All timestamps use ISO 8601 format
+- Currency formatted as Indonesian Rupiah (IDR)
+
+─────────────────────────────────────────────────────────────
+
+🔒 Files to NEVER commit to Git:
+- .env.local (contains Firebase credentials)
+- node_modules/ (dependencies, reinstall with npm install)
+- .next/ (build output, regenerated on build)
+
+─────────────────────────────────────────────────────────────
+
+🚀 To Get Started:
+1. Read SETUP_GUIDE.md for detailed setup
+2. Run: npm install
+3. Create .env.local with Firebase credentials
+4. Run: npm run dev
+5. Visit: http://localhost:3000
+
+─────────────────────────────────────────────────────────────
+
