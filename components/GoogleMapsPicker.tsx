@@ -47,6 +47,7 @@ export function GoogleMapsPicker({ onLocationSelect, onClose, initialAddress }: 
     } else {
       initMap();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const initMap = () => {

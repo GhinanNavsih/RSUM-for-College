@@ -125,6 +125,7 @@ export function PatientForm({
     ) {
       setIsPasienSendiri(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadProvinsi = async () => {
@@ -200,6 +201,7 @@ export function PatientForm({
         kontakPenanggungJawab: formData.noTelp,
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.nama, formData.noTelp, isPasienSendiri]);
 
   const jenisKelaminOptions = [

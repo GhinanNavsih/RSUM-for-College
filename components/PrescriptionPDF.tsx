@@ -183,11 +183,13 @@ export const PrescriptionPDF: React.FC<PrescriptionPDFProps> = ({ visit, patient
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Watermark */}
+        {/* eslint-disable-next-line jsx-a11y/alt-text */}
         <Image style={styles.watermark} src="/rsum-logo.png" />
 
         {/* Header with Logo - same as InvoicePDF */}
         <View style={styles.header}>
           <View style={styles.headerTop}>
+            {/* eslint-disable-next-line jsx-a11y/alt-text */}
             <Image style={styles.logo} src="/rsum-logo.png" />
 
             <View style={styles.hospitalInfo}>

@@ -227,6 +227,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ visit, patient }) => {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
+        {/* eslint-disable-next-line jsx-a11y/alt-text */}
         <Image
           style={styles.watermark}
           src="/rsum-logo.png"
@@ -236,6 +237,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ visit, patient }) => {
         <View style={styles.header}>
           <View style={styles.headerTop}>
             {/* Left Logo */}
+            {/* eslint-disable-next-line jsx-a11y/alt-text */}
             <Image
               style={styles.logo}
               src="/rsum-logo.png"

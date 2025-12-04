@@ -79,6 +79,7 @@ export const BulkPurchaseModal = ({
       // Reset form when opening
       resetForm();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   // Initialize search results for new rows when drugs are loaded
