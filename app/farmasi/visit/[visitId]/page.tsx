@@ -28,6 +28,7 @@ export default function FarmasiVisitDetailPage() {
 
   useEffect(() => {
     loadVisitData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visitId]);
 
   const loadVisitData = async () => {

@@ -35,6 +35,7 @@ export default function PatientDetailPage() {
 
   useEffect(() => {
     loadPatientData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patientId]);
 
   const loadPatientData = async () => {

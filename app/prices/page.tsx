@@ -88,6 +88,7 @@ export default function PricesPage() {
         loadPrices();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appUser, selectedCategory]);
 
   const loadPrices = async () => {
@@ -434,7 +435,7 @@ export default function PricesPage() {
               <h3 className="font-semibold text-green-900 mb-2">✅ Konfigurasi Tarif Ambulans</h3>
               <p className="text-sm text-green-700">
                 Tarif ambulans dihitung berdasarkan <strong>jarak (km)</strong> menggunakan formula yang dapat dikonfigurasi per jenis kendaraan.
-                Klik <strong>"Edit"</strong> untuk mengubah nilai tarif dan persentase.
+                Klik <strong>&quot;Edit&quot;</strong> untuk mengubah nilai tarif dan persentase.
               </p>
             </div>
 

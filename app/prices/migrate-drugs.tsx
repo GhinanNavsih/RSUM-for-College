@@ -78,7 +78,7 @@ export default function MigrateDrugsUtility() {
           <h1 className="text-2xl font-bold mb-4">Drug Migration Utility</h1>
           <p className="text-gray-600 mb-6">
             This utility will copy all drugs from the <code className="bg-gray-100 px-2 py-1 rounded">drugs</code> collection
-            to the unified pricing system under category <strong>"7. BHP (OBAT & ALKES)"</strong>.
+            to the unified pricing system under category <strong>&quot;7. BHP (OBAT &amp; ALKES)&quot;</strong>.
           </p>
 
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
@@ -130,7 +130,7 @@ export default function MigrateDrugsUtility() {
               <h3 className="font-semibold mb-2">Next Steps:</h3>
               <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
                 <li>Go to <a href="/prices" className="text-primary-600 hover:underline">/prices</a> page</li>
-                <li>Select category "7. BHP (OBAT & ALKES)"</li>
+                <li>Select category &quot;7. BHP (OBAT &amp; ALKES)&quot;</li>
                 <li>Verify all drugs are listed</li>
                 <li>Test in Rawat Inap visit billing</li>
               </ol>

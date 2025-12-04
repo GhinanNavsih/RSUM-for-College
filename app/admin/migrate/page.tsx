@@ -140,7 +140,7 @@ export default function MigrateDrugsPage() {
             </h1>
             <p className="text-gray-600">
               Migrate drugs from <code className="bg-gray-100 px-2 py-1 rounded text-sm">drugs</code> collection
-              to unified pricing system under <strong>"7. BHP (OBAT & ALKES)"</strong>
+              to unified pricing system under <strong>&quot;7. BHP (OBAT &amp; ALKES)&quot;</strong>
             </p>
           </div>
 
@@ -225,7 +225,7 @@ export default function MigrateDrugsPage() {
                         Database Harga (/prices)
                       </a>
                     </li>
-                    <li>Select category <strong>"7. BHP (OBAT & ALKES)"</strong></li>
+                    <li>Select category <strong>&quot;7. BHP (OBAT &amp; ALKES)&quot;</strong></li>
                     <li>Verify all {stats.success} drugs are listed</li>
                     <li>Test in Rawat Inap visit billing</li>
                     <li>Verify prescriptions still work (using drugs collection)</li>
@@ -255,7 +255,7 @@ export default function MigrateDrugsPage() {
               <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
                 <li>Read all drugs from <code className="bg-blue-100 px-1 rounded">drugs</code> collection</li>
                 <li>Create corresponding entries in <code className="bg-blue-100 px-1 rounded">servicePrices</code> collection</li>
-                <li>Set category to "BHP_OBAT_ALKES" for all entries</li>
+                <li>Set category to &quot;BHP_OBAT_ALKES&quot; for all entries</li>
                 <li>Preserve drug codes, names, units, and prices</li>
                 <li>Keep original drug database intact (for stock tracking)</li>
               </ol>

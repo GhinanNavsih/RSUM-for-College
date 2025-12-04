@@ -326,8 +326,8 @@ export default function LabPage() {
               <h4 className="font-semibold text-blue-900">Petunjuk</h4>
               <ul className="text-sm text-blue-700 mt-1 list-disc list-inside">
                 <li>Daftar ini menampilkan kunjungan dengan permintaan lab dari IGD</li>
-                <li>Klik "Proses" untuk memilih pemeriksaan lab yang akan dilakukan</li>
-                <li>Klik "Edit" untuk mengubah permintaan lab yang sudah ada</li>
+                <li>Klik &quot;Proses&quot; untuk memilih pemeriksaan lab yang akan dilakukan</li>
+                <li>Klik &quot;Edit&quot; untuk mengubah permintaan lab yang sudah ada</li>
               </ul>
             </div>
           </div>

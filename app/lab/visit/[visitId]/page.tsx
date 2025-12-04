@@ -59,6 +59,7 @@ export default function LabVisitPage() {
     if (appUser && visitId) {
       loadData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appUser, visitId]);
 
   const loadData = async () => {
@@ -281,7 +282,7 @@ export default function LabVisitPage() {
               <div>
                 <h4 className="font-semibold text-yellow-800">Pemeriksaan Lab Belum Diminta</h4>
                 <p className="text-sm text-yellow-700 mt-1">
-                  IGD belum mencentang "Laboratorium" di bagian Pemeriksaan Penunjang. 
+                  IGD belum mencentang &quot;Laboratorium&quot; di bagian Pemeriksaan Penunjang. 
                   Anda tetap dapat membuat permintaan lab, namun pastikan ini sesuai dengan instruksi dokter.
                 </p>
               </div>

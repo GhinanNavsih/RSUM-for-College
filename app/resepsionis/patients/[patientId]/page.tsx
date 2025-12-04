@@ -54,6 +54,7 @@ export default function CompletePatientRegistrationPage() {
 
   useEffect(() => {
     loadPatient();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patientId]);
 
   const loadPatient = async () => {

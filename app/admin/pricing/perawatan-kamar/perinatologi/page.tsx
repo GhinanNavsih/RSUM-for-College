@@ -229,7 +229,7 @@ export default function PerinatologiPage() {
                 <li>• <strong>Box</strong>: Unit perawatan dasar bayi</li>
                 <li>• <strong>Couveuse</strong>: Inkubator terbuka untuk bayi prematur</li>
                 <li>• <strong>Incubator</strong>: Inkubator tertutup dengan kontrol suhu & kelembaban</li>
-                <li>• Klik <strong>"💾 Simpan Semua Perubahan"</strong> untuk menyimpan</li>
+                <li>• Klik <strong>&quot;💾 Simpan Semua Perubahan&quot;</strong> untuk menyimpan</li>
               </ul>
             </div>
           </div>

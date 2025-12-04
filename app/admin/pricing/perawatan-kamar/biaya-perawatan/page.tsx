@@ -226,7 +226,7 @@ export default function BiayaPerawatanPage() {
               <ul className="text-sm text-blue-700 space-y-1">
                 <li>• Masukkan tarif untuk setiap jenis layanan (baris) dan kelas perawatan (kolom)</li>
                 <li>• Kosongkan atau isi 0 jika layanan tidak tersedia untuk kelas tertentu</li>
-                <li>• Klik <strong>"💾 Simpan Semua Perubahan"</strong> untuk menyimpan</li>
+                <li>• Klik <strong>&quot;💾 Simpan Semua Perubahan&quot;</strong> untuk menyimpan</li>
               </ul>
             </div>
           </div>

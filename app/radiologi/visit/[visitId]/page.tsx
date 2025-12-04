@@ -60,6 +60,7 @@ export default function RadiologyVisitPage() {
     if (appUser && visitId) {
       loadData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appUser, visitId]);
 
   const loadData = async () => {
@@ -297,7 +298,7 @@ export default function RadiologyVisitPage() {
               <div>
                 <h4 className="font-semibold text-yellow-800">Pemeriksaan Radiologi Belum Diminta</h4>
                 <p className="text-sm text-yellow-700 mt-1">
-                  IGD belum mencentang "Radiologi" di bagian Pemeriksaan Penunjang. 
+                  IGD belum mencentang &quot;Radiologi&quot; di bagian Pemeriksaan Penunjang. 
                   Anda tetap dapat membuat permintaan radiologi, namun pastikan ini sesuai dengan instruksi dokter.
                 </p>
               </div>

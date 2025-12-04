@@ -147,7 +147,7 @@ export default function AdminUsersPage() {
           <div className="mb-4">
             <h2 className="text-xl font-semibold">Daftar Pengguna</h2>
             <p className="text-sm text-gray-600 mt-1">
-              Klik "Edit Role" untuk mengubah hak akses pengguna
+              Klik &quot;Edit Role&quot; untuk mengubah hak akses pengguna
             </p>
           </div>
 

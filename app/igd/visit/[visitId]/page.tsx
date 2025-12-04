@@ -67,6 +67,7 @@ export default function VisitDetailPage() {
     loadVisitData();
     loadDrugs();
     loadDoctors();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visitId]);
 
   // Load service prices when category changes or visit loads
@@ -673,8 +674,8 @@ export default function VisitDetailPage() {
                   <div>
                     <p className="font-semibold text-red-800">Data Pemeriksaan Belum Disimpan</p>
                     <p className="text-sm text-red-700 mt-1">
-                      Isi form di bawah dan klik <strong>"Simpan Pemeriksaan"</strong> untuk menyimpan data pemeriksaan. 
-                      Jika Anda mencentang "Laboratorium", pasien akan muncul di antrian Lab.
+                      Isi form di bawah dan klik <strong>&quot;Simpan Pemeriksaan&quot;</strong> untuk menyimpan data pemeriksaan. 
+                      Jika Anda mencentang &quot;Laboratorium&quot;, pasien akan muncul di antrian Lab.
                     </p>
                   </div>
                 </div>
@@ -955,7 +956,7 @@ export default function VisitDetailPage() {
                   {newService.category === 'AMBULANCE' && (
                     <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                       <p className="text-sm text-blue-700">
-                        Klik tombol <strong>"🚑 Tambah Layanan Ambulans"</strong> di atas untuk menghitung tarif ambulans berdasarkan jarak.
+                        Klik tombol <strong>&quot;🚑 Tambah Layanan Ambulans&quot;</strong> di atas untuk menghitung tarif ambulans berdasarkan jarak.
                       </p>
                     </div>
                   )}
@@ -1171,7 +1172,7 @@ export default function VisitDetailPage() {
               <div>
                 <h4 className="font-semibold text-blue-900 mb-1">Resep Obat untuk Rawat Inap</h4>
                 <p className="text-sm text-blue-700">
-                  Untuk pasien Rawat Inap, obat-obatan diinput melalui kategori <strong>"7. BHP (OBAT & ALKES)"</strong> di bagian "Tindakan & Biaya" di atas.
+                  Untuk pasien Rawat Inap, obat-obatan diinput melalui kategori <strong>&quot;7. BHP (OBAT &amp; ALKES)&quot;</strong> di bagian &quot;Tindakan &amp; Biaya&quot; di atas.
                   Pilih kategori tersebut, lalu pilih obat dari dropdown untuk menambahkan ke tagihan.
                 </p>
               </div>

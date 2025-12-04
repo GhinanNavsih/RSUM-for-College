@@ -326,8 +326,8 @@ export default function RadiologiPage() {
               <h4 className="font-semibold text-purple-900">Petunjuk</h4>
               <ul className="text-sm text-purple-700 mt-1 list-disc list-inside">
                 <li>Daftar ini menampilkan kunjungan dengan permintaan radiologi dari IGD</li>
-                <li>Klik "Proses" untuk memilih pemeriksaan radiologi yang akan dilakukan</li>
-                <li>Klik "Edit" untuk mengubah permintaan radiologi yang sudah ada</li>
+                <li>Klik &quot;Proses&quot; untuk memilih pemeriksaan radiologi yang akan dilakukan</li>
+                <li>Klik &quot;Edit&quot; untuk mengubah permintaan radiologi yang sudah ada</li>
                 <li>Untuk pemeriksaan ekstremitas, pilih sisi <strong>R</strong> (kanan) atau <strong>L</strong> (kiri)</li>
               </ul>
             </div>
