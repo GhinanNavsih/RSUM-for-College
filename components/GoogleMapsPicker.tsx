@@ -12,10 +12,14 @@ interface GoogleMapsPickerProps {
 
 export function GoogleMapsPicker({ onLocationSelect, onClose, initialAddress }: GoogleMapsPickerProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [marker, setMarker] = useState<google.maps.Marker | null>(null);
-  const [geocoder, setGeocoder] = useState<google.maps.Geocoder | null>(null);
-  const [searchBox, setSearchBox] = useState<google.maps.places.SearchBox | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [map, setMap] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [marker, setMarker] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [geocoder, setGeocoder] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [searchBox, setSearchBox] = useState<any>(null);
   const [selectedAddress, setSelectedAddress] = useState(initialAddress || '');
   const [selectedLat, setSelectedLat] = useState<number | null>(null);
   const [selectedLng, setSelectedLng] = useState<number | null>(null);
@@ -85,7 +89,7 @@ export function GoogleMapsPicker({ onLocationSelect, onClose, initialAddress }: 
       });
 
       // Handle map click
-      mapInstance.addListener('click', (e: google.maps.MapMouseEvent) => {
+      mapInstance.addListener('click', (e: any) => {
         if (e.latLng) {
           markerInstance.setPosition(e.latLng);
           reverseGeocode(e.latLng.lat(), e.latLng.lng(), geocoderInstance);
@@ -98,7 +102,7 @@ export function GoogleMapsPicker({ onLocationSelect, onClose, initialAddress }: 
         
         // Bias results to map viewport
         mapInstance.addListener('bounds_changed', () => {
-          searchBoxInstance.setBounds(mapInstance.getBounds() as google.maps.LatLngBounds);
+          searchBoxInstance.setBounds(mapInstance.getBounds());
         });
 
         // Handle place selection
@@ -139,7 +143,7 @@ export function GoogleMapsPicker({ onLocationSelect, onClose, initialAddress }: 
     }
   };
 
-  const reverseGeocode = (lat: number, lng: number, geocoderInstance: google.maps.Geocoder) => {
+  const reverseGeocode = (lat: number, lng: number, geocoderInstance: any) => {
     geocoderInstance.geocode({ location: { lat, lng } }, (results, status) => {
       if (status === 'OK' && results && results[0]) {
         setSelectedAddress(results[0].formatted_address);
@@ -151,9 +155,9 @@ export function GoogleMapsPicker({ onLocationSelect, onClose, initialAddress }: 
 
   const geocodeAddress = (
     address: string,
-    geocoderInstance: google.maps.Geocoder,
-    mapInstance: google.maps.Map,
-    markerInstance: google.maps.Marker
+    geocoderInstance: any,
+    mapInstance: any,
+    markerInstance: any
   ) => {
     geocoderInstance.geocode({ address }, (results, status) => {
       if (status === 'OK' && results && results[0]) {
