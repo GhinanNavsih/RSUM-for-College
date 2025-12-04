@@ -12,13 +12,9 @@ interface GoogleMapsPickerProps {
 
 export function GoogleMapsPicker({ onLocationSelect, onClose, initialAddress }: GoogleMapsPickerProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [map, setMap] = useState<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [marker, setMarker] = useState<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [geocoder, setGeocoder] = useState<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [searchBox, setSearchBox] = useState<any>(null);
   const [selectedAddress, setSelectedAddress] = useState(initialAddress || '');
   const [selectedLat, setSelectedLat] = useState<number | null>(null);
