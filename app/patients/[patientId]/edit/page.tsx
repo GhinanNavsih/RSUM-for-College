@@ -18,7 +18,7 @@ import { Button } from '@/components/Button';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { PatientForm, PatientFormData } from '@/components/PatientForm';
 import { getPatient, updatePatient } from '@/lib/firestore';
-import { StatusPernikahan } from '@/types/models';
+import { StatusPernikahan, HubunganPenanggungJawab } from '@/types/models';
 import { buildFullAddress, getLocationName } from '@/lib/locationService';
 
 export default function EditPatientPage() {
@@ -85,7 +85,7 @@ export default function EditPatientPage() {
         statusPernikahan: (patient.statusPernikahan || patient.maritalStatus || '') as StatusPernikahan | '',
         pekerjaan: patient.pekerjaan || '',
         namaPenanggungJawab: patient.namaPenanggungJawab || patient.guarantorName || '',
-        hubunganPenanggungJawab: patient.hubunganPenanggungJawab || patient.guarantorRelationship || 'Orang Tua',
+        hubunganPenanggungJawab: (patient.hubunganPenanggungJawab || patient.guarantorRelationship || 'Orang Tua') as HubunganPenanggungJawab,
         kontakPenanggungJawab: patient.kontakPenanggungJawab || patient.guarantorPhone || '',
       });
     } catch (error) {
