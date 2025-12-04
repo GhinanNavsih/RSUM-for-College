@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navbar } from '@/components/Navbar';
@@ -12,7 +12,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { getAllPatients, createVisit, getPatient, getActiveDoctors } from '@/lib/firestore';
 import { Patient, VisitType, AsuransiType, Doctor } from '@/types/models';
 
-export default function NewVisitPage() {
+function NewVisitContent() {
   const { appUser } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -226,6 +226,21 @@ export default function NewVisitPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function NewVisitPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="flex justify-center py-12">
+          <LoadingSpinner size="lg" />
+        </div>
+      </div>
+    }>
+      <NewVisitContent />
+    </Suspense>
   );
 }
 
