@@ -10,13 +10,12 @@ import { Select } from '@/components/Select';
 import { Card } from '@/components/Card';
 import { Badge } from '@/components/Badge';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { getVisit, getPatient, updateVisit, getActiveDrugs, getActiveServicePricesByCategory, getAllAmbulanceConfigs } from '@/lib/firestore';
-import { Visit, Patient, VisitService, VisitPrescription, Drug, ServicePrice, BillingCategory, BILLING_SECTIONS, AmbulanceConfig } from '@/types/models';
+import { getVisit, getPatient, updateVisit, getActiveDrugs, getActiveServicePricesByCategory, getAllAmbulanceConfigs, getActiveDoctors } from '@/lib/firestore';
+import { Visit, Patient, VisitService, VisitPrescription, Drug, ServicePrice, BillingCategory, BILLING_SECTIONS, AmbulanceConfig, VisitExam, Doctor } from '@/types/models';
+import { ExaminationForm } from '@/components/ExaminationForm';
 import { formatDate, formatCurrency, getStatusBadge } from '@/lib/utils';
 import { v4 as uuidv4 } from 'uuid';
 import { calculateAmbulanceTariff, configToTariffConfig, getServiceTypes } from '@/lib/ambulancePricing';
-import { calculateDistance, getHospitalAddress, formatAddressForAPI } from '@/lib/googleMaps';
-import { GoogleMapsPicker } from '@/components/GoogleMapsPicker';
 
 export default function VisitDetailPage() {
   const { appUser } = useAuth();
@@ -27,21 +26,19 @@ export default function VisitDetailPage() {
   const [visit, setVisit] = useState<Visit | null>(null);
   const [patient, setPatient] = useState<Patient | null>(null);
   const [drugs, setDrugs] = useState<Drug[]>([]);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [servicePrices, setServicePrices] = useState<ServicePrice[]>([]);
   const [ambulanceConfigs, setAmbulanceConfigs] = useState<AmbulanceConfig[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingExam, setSavingExam] = useState(false);
 
   // Ambulance-specific state
   const [showAmbulanceModal, setShowAmbulanceModal] = useState(false);
-  const [showMapsPicker, setShowMapsPicker] = useState(false);
-  const [calculatingDistance, setCalculatingDistance] = useState(false);
   const [ambulanceForm, setAmbulanceForm] = useState({
     vehicleType: 'GRANDMAX',
     serviceType: 'PASIEN',
-    pickupLocation: '',
     oneWayKm: 0,
-    googleMapsUrl: '',
     estimatedCost: 0,
   });
 
@@ -69,14 +66,16 @@ export default function VisitDetailPage() {
   useEffect(() => {
     loadVisitData();
     loadDrugs();
+    loadDoctors();
   }, [visitId]);
 
-  // Load service prices when category changes
+  // Load service prices when category changes or visit loads
   useEffect(() => {
-    if (visit?.jenis === 'Rawat Inap' && newService.category) {
+    if (visit) {
+      // Load prices based on selected category for all visit types
       loadServicePrices(newService.category);
     }
-  }, [newService.category, visit?.jenis]);
+  }, [newService.category, visit]); // Include full visit object to detect when it loads
 
   const loadVisitData = async () => {
     setLoading(true);
@@ -101,19 +100,32 @@ export default function VisitDetailPage() {
       console.log('Active drugs loaded:', activeDrugs.length, activeDrugs);
       setDrugs(activeDrugs);
     } catch (error) {
-      console.error('Error loading drugs:', error);
+      console.error('Error loading doctors:', error);
       alert('Gagal memuat database obat. Silakan refresh halaman.');
+    }
+  };
+
+  const loadDoctors = async () => {
+    try {
+      const activeDoctors = await getActiveDoctors();
+      setDoctors(activeDoctors);
+    } catch (error) {
+      console.error('Error loading doctors:', error);
     }
   };
 
   const loadServicePrices = async (category: BillingCategory) => {
     try {
-      console.log('Loading service prices for category:', category);
+      console.log('🔍 Loading service prices for category:', category);
       const prices = await getActiveServicePricesByCategory(category);
-      console.log('Service prices loaded:', prices.length, prices);
+      console.log('✅ Service prices loaded:', prices.length, 'items', prices);
       setServicePrices(prices);
+      
+      if (prices.length === 0) {
+        console.warn(`⚠️ No services found in category "${category}". Add services in Database Harga → ${category}`);
+      }
     } catch (error) {
-      console.error('Error loading service prices:', error);
+      console.error('❌ Error loading service prices:', error);
       setServicePrices([]);
     }
   };
@@ -327,9 +339,7 @@ export default function VisitDetailPage() {
     setAmbulanceForm({
       vehicleType: 'GRANDMAX',
       serviceType: 'PASIEN',
-      pickupLocation: '',
       oneWayKm: 0,
-      googleMapsUrl: '',
       estimatedCost: 0,
     });
     setShowAmbulanceModal(true);
@@ -339,82 +349,11 @@ export default function VisitDetailPage() {
     setShowAmbulanceModal(false);
   };
 
-  const handleOpenMapsPicker = () => {
-    setShowMapsPicker(true);
-  };
-
-  const handleCloseMapsPicker = () => {
-    setShowMapsPicker(false);
-  };
-
-  const handleLocationSelect = (address: string, lat: number, lng: number) => {
-    setAmbulanceForm({
-      ...ambulanceForm,
-      pickupLocation: address,
-    });
-    setShowMapsPicker(false);
-    
-    // Optionally auto-calculate distance after selecting location
-    // Uncomment if you want automatic calculation
-    // setTimeout(() => handleCalculateDistance(), 500);
-  };
-
-  const handleCalculateDistance = async () => {
-    if (!ambulanceForm.pickupLocation || ambulanceForm.pickupLocation.trim().length < 5) {
-      alert('Mohon masukkan alamat penjemputan (minimal 5 karakter)');
-      return;
-    }
-
-    setCalculatingDistance(true);
-    try {
-      const formattedAddress = formatAddressForAPI(ambulanceForm.pickupLocation, 'Ponorogo');
-      const result = await calculateDistance(formattedAddress, getHospitalAddress());
-
-      if (result.status === 'error') {
-        alert(result.errorMessage || 'Gagal menghitung jarak');
-        return;
-      }
-
-      // Get config for selected vehicle
-      const config = ambulanceConfigs.find(c => c.vehicleType === ambulanceForm.vehicleType);
-      if (!config) {
-        alert('Konfigurasi kendaraan tidak ditemukan');
-        return;
-      }
-
-      // Calculate tariff
-      const tariffConfig = configToTariffConfig(config);
-      const tariffResult = calculateAmbulanceTariff(
-        {
-          vehicleType: ambulanceForm.vehicleType as any,
-          serviceType: ambulanceForm.serviceType as any,
-          oneWayKm: result.distanceKm,
-          googleMapsUrl: result.mapsUrl,
-        },
-        tariffConfig
-      );
-
-      setAmbulanceForm({
-        ...ambulanceForm,
-        oneWayKm: result.distanceKm,
-        googleMapsUrl: result.mapsUrl,
-        estimatedCost: tariffResult.total,
-      });
-
-      alert(`Jarak berhasil dihitung: ${result.distanceText} (${result.durationText})`);
-    } catch (error: any) {
-      console.error('Error calculating distance:', error);
-      alert(error.message || 'Gagal menghitung jarak');
-    } finally {
-      setCalculatingDistance(false);
-    }
-  };
-
   const handleAddAmbulanceService = () => {
     if (!visit) return;
 
     if (ambulanceForm.oneWayKm === 0) {
-      alert('Mohon hitung jarak terlebih dahulu atau masukkan jarak manual');
+      alert('Mohon masukkan jarak tempuh');
       return;
     }
 
@@ -432,7 +371,6 @@ export default function VisitDetailPage() {
         vehicleType: ambulanceForm.vehicleType as any,
         serviceType: ambulanceForm.serviceType as any,
         oneWayKm: ambulanceForm.oneWayKm,
-        googleMapsUrl: ambulanceForm.googleMapsUrl,
       },
       tariffConfig
     );
@@ -547,12 +485,54 @@ export default function VisitDetailPage() {
     }
   };
 
+  const handleSaveExam = async (examData: VisitExam) => {
+    if (!visit) return;
+
+    setSavingExam(true);
+    try {
+      // Debug: log what we're saving
+      console.log('💾 Saving exam data:', examData);
+      console.log('🔬 penunjangLabRequested:', examData.penunjangLabRequested);
+      
+      await updateVisit(visitId, {
+        exam: examData,
+      });
+      
+      // Update local state
+      setVisit({ ...visit, exam: examData });
+      
+      console.log('✅ Exam saved successfully');
+      alert('✅ Data pemeriksaan berhasil disimpan!');
+    } catch (error) {
+      console.error('❌ Error saving examination:', error);
+      alert('Gagal menyimpan data pemeriksaan. Silakan coba lagi.');
+    } finally {
+      setSavingExam(false);
+    }
+  };
+
   const handleFinishVisit = async () => {
     if (!visit) return;
 
     if (visit.services.length === 0) {
       alert('Mohon tambahkan minimal satu tindakan sebelum menyelesaikan kunjungan.');
       return;
+    }
+
+    // Check if exam data has been saved for IGD/Rawat Jalan
+    if ((visit.jenis === 'IGD' || visit.jenis === 'Rawat Jalan') && !visit.exam) {
+      const proceed = confirm(
+        '⚠️ Data Pemeriksaan Pasien belum disimpan!\n\n' +
+        'Jika Anda sudah mengisi form pemeriksaan (termasuk centang Laboratorium/Radiologi), ' +
+        'pastikan klik "Simpan Pemeriksaan" terlebih dahulu.\n\n' +
+        'Apakah Anda yakin ingin melanjutkan tanpa data pemeriksaan?'
+      );
+      if (!proceed) return;
+    }
+
+    // Check if lab was requested but remind user about it
+    if (visit.exam?.penunjangLabRequested) {
+      console.log('📋 Lab requested for this visit - will appear in Lab queue');
     }
 
     setSaving(true);
@@ -563,7 +543,13 @@ export default function VisitDetailPage() {
         totalBiaya: visit.totalBiaya,
         status: 'igd_done',
       });
-      alert('Kunjungan telah selesai!');
+      
+      // Show message based on whether lab was requested
+      if (visit.exam?.penunjangLabRequested) {
+        alert('✅ Kunjungan telah selesai!\n\nPasien ini akan muncul di antrian Laboratorium.');
+      } else {
+        alert('✅ Kunjungan telah selesai!');
+      }
       router.push('/igd');
     } catch (error) {
       console.error('Error finishing visit:', error);
@@ -667,6 +653,57 @@ export default function VisitDetailPage() {
             </div>
           </Card>
         </div>
+
+        {/* Examination Section - Data Pemeriksaan */}
+        {(visit.jenis === 'Rawat Jalan' || visit.jenis === 'IGD') && canEdit && (
+          <Card className="mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900">📋 Data Pemeriksaan Pasien</h2>
+              {visit.exam ? (
+                <Badge color="green">✓ Tersimpan</Badge>
+              ) : (
+                <Badge color="bg-red-100 text-red-800">⚠ Belum Disimpan</Badge>
+              )}
+            </div>
+            
+            {!visit.exam && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <span className="text-red-600 text-xl">⚠️</span>
+                  <div>
+                    <p className="font-semibold text-red-800">Data Pemeriksaan Belum Disimpan</p>
+                    <p className="text-sm text-red-700 mt-1">
+                      Isi form di bawah dan klik <strong>"Simpan Pemeriksaan"</strong> untuk menyimpan data pemeriksaan. 
+                      Jika Anda mencentang "Laboratorium", pasien akan muncul di antrian Lab.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {visit.exam?.penunjangLabRequested && (
+              <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <span className="text-blue-600 text-xl">🔬</span>
+                  <div>
+                    <p className="font-semibold text-blue-800">Pemeriksaan Lab Diminta</p>
+                    <p className="text-sm text-blue-700 mt-1">
+                      Pasien ini akan muncul di antrian Laboratorium setelah kunjungan diselesaikan.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <ExaminationForm
+              exam={visit.exam}
+              doctors={doctors}
+              defaultDoctorId={visit.dokter}
+              onSave={handleSaveExam}
+              saving={savingExam}
+            />
+          </Card>
+        )}
 
         {/* Services Section */}
         <Card title="Tindakan & Biaya" className="mb-6">
@@ -924,42 +961,82 @@ export default function VisitDetailPage() {
                   )}
                 </div>
               ) : (
-                // IGD / Rawat Jalan: Simple form
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                  <Input
-                    placeholder="Nama tindakan"
-                    value={newService.nama}
-                    onChange={(e) => setNewService({ ...newService, nama: e.target.value })}
-                    className="mb-0"
-                  />
-                  <Input
-                    type="number"
-                    placeholder="Harga"
-                    value={newService.harga}
-                    onChange={(e) => setNewService({ ...newService, harga: e.target.value })}
-                    className="mb-0"
-                  />
-                  <Input
-                    type="number"
-                    placeholder="Qty"
-                    value={newService.quantity}
-                    onChange={(e) => setNewService({ ...newService, quantity: e.target.value })}
-                    className="mb-0"
-                  />
-                  <div className="flex gap-2">
-                    <Button onClick={handleAddService} className="h-10">
-                      {editingServiceId ? '✓ Simpan' : '+ Tambah'}
-                    </Button>
-                    {editingServiceId && (
-                      <Button 
-                        variant="secondary" 
-                        onClick={handleCancelEdit} 
-                        className="h-10"
-                      >
-                        Batal
-                      </Button>
-                    )}
+                // IGD / Rawat Jalan: Form with database connection
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {/* Category Selector */}
+                    <Select
+                      value={newService.category}
+                      onChange={(e) => setNewService({ ...newService, category: e.target.value as BillingCategory, nama: '', harga: '', unit: '' })}
+                      options={BILLING_SECTIONS.map(section => ({
+                        value: section.key,
+                        label: `${section.no}. ${section.label}`
+                      }))}
+                      className="mb-0"
+                    />
+                    {/* Service Selection from Database */}
+                    <Select
+                      value=""
+                      onChange={handleServiceSelect}
+                      options={[
+                        { 
+                          value: '', 
+                          label: servicePrices.length > 0 
+                            ? `-- Pilih Layanan (${servicePrices.length}) --` 
+                            : '-- Belum ada data --'
+                        },
+                        ...servicePrices.map(service => ({
+                          value: service.id,
+                          label: `${service.serviceName} - ${formatCurrency(service.price)}/${service.unit || 'x'}`
+                        }))
+                      ]}
+                      className="mb-0"
+                    />
+                    <Input
+                      placeholder="Atau ketik nama manual"
+                      value={newService.nama}
+                      onChange={(e) => setNewService({ ...newService, nama: e.target.value })}
+                      className="mb-0"
+                    />
                   </div>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <Input
+                      type="number"
+                      placeholder="Harga"
+                      value={newService.harga}
+                      onChange={(e) => setNewService({ ...newService, harga: e.target.value })}
+                      className="mb-0"
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Qty"
+                      value={newService.quantity}
+                      onChange={(e) => setNewService({ ...newService, quantity: e.target.value })}
+                      className="mb-0"
+                    />
+                    {newService.harga && newService.quantity && (
+                      <div className="text-sm font-medium text-gray-700 self-center">
+                        Subtotal: {formatCurrency(parseFloat(newService.harga) * parseInt(newService.quantity))}
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <Button onClick={handleAddService} className="h-10">
+                        {editingServiceId ? '✓ Simpan' : '+ Tambah'}
+                      </Button>
+                      {editingServiceId && (
+                        <Button 
+                          variant="secondary" 
+                          onClick={handleCancelEdit} 
+                          className="h-10"
+                        >
+                          Batal
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    * Pilih kategori, lalu pilih layanan dari database untuk mengisi harga otomatis, atau ketik manual.
+                  </p>
                 </div>
               )}
             </div>
@@ -1121,11 +1198,11 @@ export default function VisitDetailPage() {
       {/* Ambulance Service Modal */}
       {showAmbulanceModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h2 className="text-2xl font-bold mb-2">🚑 Tambah Layanan Ambulans</h2>
               <p className="text-sm text-gray-600 mb-6">
-                Pilih jenis kendaraan, masukkan lokasi penjemputan, dan hitung tarif otomatis
+                Pilih jenis kendaraan, masukkan jarak tempuh, dan hitung tarif otomatis
               </p>
 
               <div className="space-y-4">
@@ -1161,48 +1238,42 @@ export default function VisitDetailPage() {
                   </div>
                 </div>
 
-                {/* Pickup Location */}
+                {/* Distance Input */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Lokasi Penjemputan *
+                    Jarak Tempuh (km) *
                   </label>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Contoh: Jl. Sudirman No. 45, Ponorogo"
-                      value={ambulanceForm.pickupLocation}
-                      onChange={(e) => setAmbulanceForm({ ...ambulanceForm, pickupLocation: e.target.value })}
-                      className="mb-0 flex-1"
-                    />
-                    <Button
-                      onClick={handleOpenMapsPicker}
-                      variant="secondary"
-                      className="whitespace-nowrap"
-                    >
-                      🗺️ Pilih di Peta
-                    </Button>
-                  </div>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="Contoh: 5.3"
+                    value={ambulanceForm.oneWayKm || ''}
+                    onChange={(e) => {
+                      const km = parseFloat(e.target.value) || 0;
+                      setAmbulanceForm({ ...ambulanceForm, oneWayKm: km });
+                      
+                      // Recalculate cost
+                      if (km > 0) {
+                        const config = ambulanceConfigs.find(c => c.vehicleType === ambulanceForm.vehicleType);
+                        if (config) {
+                          const tariffConfig = configToTariffConfig(config);
+                          const tariffResult = calculateAmbulanceTariff(
+                            {
+                              vehicleType: ambulanceForm.vehicleType as any,
+                              serviceType: ambulanceForm.serviceType as any,
+                              oneWayKm: km,
+                            },
+                            tariffConfig
+                          );
+                          setAmbulanceForm(prev => ({ ...prev, estimatedCost: tariffResult.total }));
+                        }
+                      }
+                    }}
+                    className="mb-0"
+                  />
                   <p className="text-xs text-gray-500 mt-1">
-                    Ketik alamat atau klik <strong>"🗺️ Pilih di Peta"</strong> untuk memilih lokasi secara visual
+                    Masukkan jarak satu arah dalam kilometer
                   </p>
-                </div>
-
-                {/* Calculate Distance Button */}
-                <div className="flex gap-3">
-                  <Button
-                    onClick={handleCalculateDistance}
-                    disabled={calculatingDistance || !ambulanceForm.pickupLocation}
-                    variant="secondary"
-                    className="flex-1"
-                  >
-                    {calculatingDistance ? (
-                      <>
-                        <span className="mr-2"><LoadingSpinner size="sm" /></span>
-                        Menghitung jarak...
-                      </>
-                    ) : (
-                      '📍 Hitung Jarak via Google Maps'
-                    )}
-                  </Button>
                 </div>
 
                 {/* Distance Display */}
@@ -1222,57 +1293,8 @@ export default function VisitDetailPage() {
                         </p>
                       </div>
                     </div>
-                    {ambulanceForm.googleMapsUrl && (
-                      <a
-                        href={ambulanceForm.googleMapsUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:text-blue-800 mt-2 inline-block"
-                      >
-                        🗺️ Lihat di Google Maps →
-                      </a>
-                    )}
                   </div>
                 )}
-
-                {/* Manual Distance Input */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Atau Masukkan Jarak Manual (km)
-                  </label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    placeholder="5.3"
-                    value={ambulanceForm.oneWayKm || ''}
-                    onChange={(e) => {
-                      const km = parseFloat(e.target.value) || 0;
-                      setAmbulanceForm({ ...ambulanceForm, oneWayKm: km });
-                      
-                      // Recalculate cost
-                      if (km > 0) {
-                        const config = ambulanceConfigs.find(c => c.vehicleType === ambulanceForm.vehicleType);
-                        if (config) {
-                          const tariffConfig = configToTariffConfig(config);
-                          const tariffResult = calculateAmbulanceTariff(
-                            {
-                              vehicleType: ambulanceForm.vehicleType as any,
-                              serviceType: ambulanceForm.serviceType as any,
-                              oneWayKm: km,
-                              googleMapsUrl: ambulanceForm.googleMapsUrl,
-                            },
-                            tariffConfig
-                          );
-                          setAmbulanceForm(prev => ({ ...prev, estimatedCost: tariffResult.total }));
-                        }
-                      }
-                    }}
-                    className="mb-0"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Jika Google Maps tidak tersedia, masukkan jarak secara manual
-                  </p>
-                </div>
 
                 {/* Cost Estimate */}
                 {ambulanceForm.estimatedCost > 0 && (
@@ -1304,27 +1326,6 @@ export default function VisitDetailPage() {
                   Batal
                 </Button>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Google Maps Picker Modal */}
-      {showMapsPicker && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg w-full max-w-4xl h-[80vh] flex flex-col">
-            <div className="p-4 border-b">
-              <h2 className="text-2xl font-bold">🗺️ Pilih Lokasi Penjemputan</h2>
-              <p className="text-sm text-gray-600 mt-1">
-                Cari alamat atau klik langsung di peta, lalu seret pin untuk menyesuaikan lokasi
-              </p>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <GoogleMapsPicker
-                onLocationSelect={handleLocationSelect}
-                onClose={handleCloseMapsPicker}
-                initialAddress={ambulanceForm.pickupLocation}
-              />
             </div>
           </div>
         </div>

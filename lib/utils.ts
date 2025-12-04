@@ -38,6 +38,17 @@ export const formatDateTime = (dateString: string): string => {
 };
 
 /**
+ * Format time only (HH:MM)
+ */
+export const formatTime = (dateString: string): string => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+};
+
+/**
  * Calculate age from date of birth
  */
 export const calculateAge = (dateOfBirth: string): number => {
@@ -98,6 +109,9 @@ export const getRoleDisplayName = (role: string): string => {
     igd: 'IGD',
     kasir: 'Kasir',
     farmasi: 'Farmasi',
+    resepsionis: 'Resepsionis',
+    lab: 'Laboratorium',
+    radiologi: 'Radiologi',
   };
   return roleNames[role] || role;
 };

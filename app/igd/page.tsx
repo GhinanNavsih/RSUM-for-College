@@ -76,9 +76,14 @@ export default function IGDPage() {
             <h1 className="text-3xl font-bold text-gray-900">Dashboard IGD</h1>
             <p className="text-gray-600 mt-2">Kelola kunjungan pasien IGD</p>
           </div>
-          <Link href="/igd/new-visit">
-            <Button>+ Kunjungan Baru</Button>
-          </Link>
+          <div className="flex gap-3">
+            <Link href="/igd/intake">
+              <Button variant="primary">+ Registrasi Cepat IGD</Button>
+            </Link>
+            <Link href="/igd/new-visit">
+              <Button variant="secondary">Kunjungan Baru</Button>
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">

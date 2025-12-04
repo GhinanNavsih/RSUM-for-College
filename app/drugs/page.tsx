@@ -20,7 +20,8 @@ import { Select } from '@/components/Select';
 import { Card } from '@/components/Card';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Badge } from '@/components/Badge';
-import { getAllDrugs, createDrug, updateDrug, deleteDrug, searchDrugs } from '@/lib/firestore';
+import { BulkPurchaseModal } from '@/components/BulkPurchaseModal';
+import { getAllDrugs, createDrug, updateDrug, deleteDrug, searchDrugs, getAveragePurchasePrices } from '@/lib/firestore';
 import { Drug, DrugUnit } from '@/types/models';
 import { formatCurrency } from '@/lib/utils';
 
@@ -33,6 +34,9 @@ export default function DrugsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingDrug, setEditingDrug] = useState<Drug | null>(null);
   const [saving, setSaving] = useState(false);
+  
+  // Average purchase prices (Harga Kulak) - keyed by drug Firestore ID
+  const [avgPurchasePrices, setAvgPurchasePrices] = useState<Record<string, number>>({});
 
   const [formData, setFormData] = useState({
     drugId: '',
@@ -45,6 +49,9 @@ export default function DrugsPage() {
     description: '',
     manufacturer: '',
   });
+
+  // Bulk Purchase Modal state
+  const [showBulkPurchaseModal, setShowBulkPurchaseModal] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !appUser) {
@@ -61,8 +68,13 @@ export default function DrugsPage() {
   const loadDrugs = async () => {
     setLoading(true);
     try {
-      const data = await getAllDrugs();
-      setDrugs(data);
+      // Load drugs and average purchase prices in parallel
+      const [drugsData, avgPrices] = await Promise.all([
+        getAllDrugs(),
+        getAveragePurchasePrices(),
+      ]);
+      setDrugs(drugsData);
+      setAvgPurchasePrices(avgPrices);
     } catch (error) {
       console.error('Error loading drugs:', error);
       alert('Gagal memuat data obat');
@@ -218,9 +230,17 @@ export default function DrugsPage() {
             <h1 className="text-3xl font-bold text-gray-900">Database Obat</h1>
             <p className="text-gray-600 mt-1">Master Data & Inventory Management</p>
           </div>
-          <Button onClick={() => handleOpenModal()}>
-            + Tambah Obat Baru
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              variant="secondary"
+              onClick={() => setShowBulkPurchaseModal(true)}
+            >
+              📦 Input Pembelian Obat
+            </Button>
+            <Button onClick={() => handleOpenModal()}>
+              + Tambah Obat Baru
+            </Button>
+          </div>
         </div>
 
         {/* Search Bar */}
@@ -266,7 +286,10 @@ export default function DrugsPage() {
                       Satuan
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Harga/Unit
+                      Harga Kulak
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Harga Jual
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Stok
@@ -294,8 +317,19 @@ export default function DrugsPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {drug.unit}
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {avgPurchasePrices[drug.id] ? (
+                            <span className="font-medium text-orange-600">
+                              {formatCurrency(avgPurchasePrices[drug.id])}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 text-xs">Belum ada</span>
+                          )}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                          {formatCurrency(drug.pricePerUnit)}
+                          <span className="text-green-600">
+                            {formatCurrency(drug.pricePerUnit)}
+                          </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           <span className={`font-medium ${isLowStock ? 'text-red-600' : 'text-gray-900'}`}>
@@ -393,7 +427,7 @@ export default function DrugsPage() {
                   />
 
                   <Input
-                    label="Harga per Unit *"
+                    label="Harga Jual per Unit *"
                     name="pricePerUnit"
                     type="number"
                     value={formData.pricePerUnit}
@@ -473,6 +507,14 @@ export default function DrugsPage() {
           </div>
         </div>
       )}
+
+      {/* Bulk Purchase Modal */}
+      <BulkPurchaseModal
+        isOpen={showBulkPurchaseModal}
+        onClose={() => setShowBulkPurchaseModal(false)}
+        onSuccess={loadDrugs}
+        currentUserId={appUser?.id || ''}
+      />
     </div>
   );
 }

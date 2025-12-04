@@ -18,6 +18,7 @@ const GITHUB_RAW_BASE_URL = 'https://raw.githubusercontent.com/ibnux/data-indone
 export interface LocationItem {
   id: string;
   nama: string;
+  name: string;  // Alias for nama (for compatibility)
 }
 
 // Cache to reduce API calls
@@ -44,10 +45,17 @@ async function fetchFromGitHub(path: string): Promise<LocationItem[]> {
     
     const data = await response.json();
     
-    // Cache the result
-    cache[path] = data;
+    // Map 'nama' to 'name' for compatibility
+    const mappedData = data.map((item: any) => ({
+      id: item.id,
+      nama: item.nama,
+      name: item.nama,  // Add 'name' as alias
+    }));
     
-    return data;
+    // Cache the result
+    cache[path] = mappedData;
+    
+    return mappedData;
   } catch (error) {
     console.error(`Error fetching ${path}:`, error);
     throw error;
@@ -89,32 +97,80 @@ export async function getKelurahan(kecamatanId: string): Promise<LocationItem[]>
 }
 
 /**
- * Get location name by ID
+ * Get location name by type and ID
+ * @param type - Type of location ('provinsi', 'kabupaten', 'kecamatan', 'desa')
+ * @param id - Location ID
  */
-export function getLocationName(locations: LocationItem[], id: string): string {
-  const location = locations.find(loc => loc.id === id);
-  return location?.nama || '';
+export async function getLocationName(type: string, id: string): Promise<string> {
+  if (!id) return '';
+  
+  try {
+    let data: LocationItem[] = [];
+    
+    switch (type) {
+      case 'provinsi':
+        data = await getProvinsi();
+        break;
+      case 'kabupaten':
+        // Need to fetch all kabupaten - this is a limitation
+        // For now, return empty or we need parent ID
+        return '';
+      case 'kecamatan':
+        return '';
+      case 'desa':
+        return '';
+      default:
+        return '';
+    }
+    
+    const location = data.find(loc => loc.id === id);
+    return location?.nama || '';
+  } catch (error) {
+    console.error(`Error getting location name for ${type}:`, error);
+    return '';
+  }
 }
 
 /**
  * Build full address string from structured data
  */
-export function buildFullAddress(
-  detailAlamat: string,
-  desaName: string,
-  kecamatanName: string,
-  kabupatenName: string,
-  provinsiName: string
-): string {
-  const parts = [
-    detailAlamat,
-    desaName && `Desa/Kel. ${desaName}`,
-    kecamatanName && `Kec. ${kecamatanName}`,
-    kabupatenName,
-    provinsiName,
-  ].filter(Boolean);
-  
-  return parts.join(', ');
+export async function buildFullAddress(params: {
+  provinsiId: string;
+  kabupatenId: string;
+  kecamatanId: string;
+  desaId: string;
+  detailAlamat?: string;
+}): Promise<string> {
+  try {
+    const { provinsiId, kabupatenId, kecamatanId, desaId, detailAlamat } = params;
+    
+    // Fetch location names
+    const provinsiList = await getProvinsi();
+    const provinsi = provinsiList.find(p => p.id === provinsiId);
+    
+    const kabupatenList = provinsiId ? await getKabupaten(provinsiId) : [];
+    const kabupaten = kabupatenList.find(k => k.id === kabupatenId);
+    
+    const kecamatanList = kabupatenId ? await getKecamatan(kabupatenId) : [];
+    const kecamatan = kecamatanList.find(k => k.id === kecamatanId);
+    
+    const desaList = kecamatanId ? await getKelurahan(kecamatanId) : [];
+    const desa = desaList.find(d => d.id === desaId);
+    
+    // Build address parts
+    const parts = [
+      detailAlamat,
+      desa?.nama && `Desa/Kel. ${desa.nama}`,
+      kecamatan?.nama && `Kec. ${kecamatan.nama}`,
+      kabupaten?.nama,
+      provinsi?.nama,
+    ].filter(Boolean);
+    
+    return parts.join(', ');
+  } catch (error) {
+    console.error('Error building full address:', error);
+    return '';
+  }
 }
 
 /**

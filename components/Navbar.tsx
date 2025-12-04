@@ -21,29 +21,31 @@ export const Navbar = () => {
 
   const getNavLinks = () => {
     const links = [
-      { href: '/patients', label: 'Pasien', roles: ['admin', 'igd', 'kasir', 'farmasi'] },
+      { href: '/database', label: 'Database RSUM', roles: ['admin', 'igd', 'kasir', 'farmasi', 'resepsionis', 'lab', 'radiologi'] },
     ];
 
     if (appUser.role === 'admin') {
       links.push(
         { href: '/igd', label: 'IGD', roles: ['admin', 'igd'] },
+        { href: '/resepsionis/patients', label: 'Resepsionis', roles: ['admin', 'resepsionis'] },
         { href: '/kasir', label: 'Kasir', roles: ['admin', 'kasir'] },
         { href: '/farmasi', label: 'Farmasi', roles: ['admin', 'farmasi'] },
-        { href: '/prices', label: 'Database Harga', roles: ['admin', 'farmasi'] },
-        { href: '/drugs', label: 'Database Obat', roles: ['admin', 'farmasi'] },
-        { href: '/doctors', label: 'Database Dokter', roles: ['admin'] },
+        { href: '/lab', label: 'Lab', roles: ['admin', 'lab'] },
+        { href: '/radiologi', label: 'Radiologi', roles: ['admin', 'radiologi'] },
         { href: '/admin/users', label: 'Manajemen User', roles: ['admin'] }
       );
     } else if (appUser.role === 'igd') {
       links.push({ href: '/igd', label: 'IGD', roles: ['admin', 'igd'] });
+    } else if (appUser.role === 'resepsionis') {
+      links.push({ href: '/resepsionis/patients', label: 'Resepsionis', roles: ['admin', 'resepsionis'] });
     } else if (appUser.role === 'kasir') {
       links.push({ href: '/kasir', label: 'Kasir', roles: ['admin', 'kasir'] });
     } else if (appUser.role === 'farmasi') {
-      links.push(
-        { href: '/farmasi', label: 'Farmasi', roles: ['admin', 'farmasi'] },
-        { href: '/prices', label: 'Database Harga', roles: ['admin', 'farmasi'] },
-        { href: '/drugs', label: 'Database Obat', roles: ['admin', 'farmasi'] }
-      );
+      links.push({ href: '/farmasi', label: 'Farmasi', roles: ['admin', 'farmasi'] });
+    } else if (appUser.role === 'lab') {
+      links.push({ href: '/lab', label: 'Lab', roles: ['admin', 'lab'] });
+    } else if (appUser.role === 'radiologi') {
+      links.push({ href: '/radiologi', label: 'Radiologi', roles: ['admin', 'radiologi'] });
     }
 
     return links.filter(link => link.roles.includes(appUser.role));

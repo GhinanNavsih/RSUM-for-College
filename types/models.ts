@@ -4,20 +4,47 @@
 // PATIENT TYPES
 // ============================================
 
+export type RegistrationStatus = 'TEMPORARY' | 'COMPLETE';
+export type EmergencyTriageLevel = 'MERAH' | 'KUNING' | 'HIJAU' | 'HITAM';
+
 export type InsuranceType = "BPJS" | "Pribadi" | "Asuransi Lain" | "Lainnya";
 export type JenisKelamin = "Laki-laki" | "Perempuan";
-export type StatusPernikahan = "Belum Menikah" | "Menikah" | "Cerai Hidup" | "Cerai Mati";
+export type JenisKelaminShort = "L" | "P";  // Short version for IGD intake
+export type StatusPernikahan = 
+  | "Belum Kawin"
+  | "Cerai Hidup"
+  | "Cerai Mati"
+  | "Kawin"
+  | "Lainnya";
 export type HubunganPenanggungJawab = 
   | "Anak" 
   | "Kakek/Nenek" 
   | "Orang Tua" 
   | "Paman/Bibi" 
-  | "Pasangan" 
   | "Pasien Sendiri"
   | "Pengasuh Asrama" 
   | "Pengurus Asrama" 
+  | "Suami/Istri"
   | "Teman" 
   | "Tetangga"
+  | "Lainnya";
+
+export type AgamaType = 
+  | "Islam"
+  | "Protestan"
+  | "Katolik"
+  | "Hindu"
+  | "Buddha"
+  | "Konghucu"
+  | "Lainnya";
+
+export type JenisAsuransiType =
+  | "Umum"
+  | "BPJS"
+  | "BPJS TK"
+  | "P2KS"
+  | "KIS"
+  | "Jasaraharja"
   | "Lainnya";
 
 // Address structure for structured location data
@@ -35,21 +62,66 @@ export interface PatientAddress {
 
 export interface Patient {
   id: string;                           // Firestore doc id
-  noRM: string;                         // Nomor Rekam Medis - REQUIRED
-  nama: string;                         // Nama lengkap - REQUIRED
-  nik?: string;                         // NIK (KTP) - REQUIRED for new, optional for old data
-  tanggalLahir?: string;                // Tanggal lahir (ISO date) - REQUIRED for new, optional for old data
+  
+  // REGISTRATION STATUS (NEW)
+  registrationStatus?: RegistrationStatus;  // 'TEMPORARY' or 'COMPLETE' (undefined = 'COMPLETE' for old data)
+  
+  // Legacy fields (kept for backward compatibility)
+  noRM?: string;                        // Nomor Rekam Medis (may exist only after full registration)
+  nama?: string;                        // Nama lengkap (legacy)
+  nik?: string;                         // NIK (KTP)
+  tanggalLahir?: string;                // Tanggal lahir (ISO date)
   umur?: number;                        // Computed from tanggalLahir (optional)
-  jenisKelamin?: JenisKelamin;          // Jenis kelamin - REQUIRED for new, optional for old data
-  alamat?: string;                      // Alamat lengkap (legacy text field) - REQUIRED for new, optional for old data
-  alamatLengkap?: PatientAddress;       // Structured address data (new)
-  noTelp?: string;                      // No. telepon / HP - REQUIRED for new, optional for old data
+  jenisKelamin?: JenisKelamin;          // Jenis kelamin (legacy format)
+  alamat?: string;                      // Alamat lengkap (legacy text field)
+  alamatLengkap?: PatientAddress;       // Structured address data
+  noTelp?: string;                      // No. telepon / HP
   email?: string;                       // Email (optional)
   statusPernikahan?: StatusPernikahan;  // Status pernikahan (optional)
   pekerjaan?: string;                   // Pekerjaan (optional)
-  namaPenanggungJawab?: string;         // Nama penanggung jawab - REQUIRED for new, optional for old data
-  hubunganPenanggungJawab?: HubunganPenanggungJawab; // Hubungan penanggung jawab - REQUIRED for new, optional for old data
-  kontakPenanggungJawab?: string;       // Kontak penanggung jawab - REQUIRED for new, optional for old data
+  namaPenanggungJawab?: string;         // Nama penanggung jawab
+  hubunganPenanggungJawab?: HubunganPenanggungJawab; // Hubungan penanggung jawab
+  kontakPenanggungJawab?: string;       // Kontak penanggung jawab
+  
+  // --- DataPasien Sementara (IGD) ---
+  tempDoctorId?: string;                // Dokter ID (reference to doctors collection)
+  tempDoctorName?: string;              // Dokter name (for display)
+  tempNurseId?: string;                 // Perawat/Bidan ID (could be string or reference)
+  tempNurseName?: string;               // Perawat/Bidan name (for display)
+  tempFullName?: string;                // Nama Lengkap (temporary)
+  tempAge?: number;                     // Umur
+  tempWeightKg?: number;                // Berat badan (kg)
+  tempGender?: JenisKelaminShort;       // Jenis kelamin (L/P)
+  tempDomicile?: string;                // Domisili singkat (desa/kota)
+  tempPhoneNumber?: string;             // No HP Pasien
+  tempFamilyContact?: string;           // Kontak keluarga
+  tempChiefComplaint?: string;          // Keluhan Utama
+  tempTriage?: EmergencyTriageLevel;    // Triase (Merah/Kuning/Hijau/Hitam)
+  tempDischargeReason?: string;         // Alasan Pulang (Pulang, Rujuk, Meninggal, etc.)
+  tempSectioEmergency?: boolean;        // Sectio Caesarea Emergency (yes/no)
+  
+  // --- DataPasien Lengkap (Resepsionis) ---
+  fullName?: string;                    // Nama Lengkap (full registration)
+  birthDate?: string;                   // Tanggal Lahir (ISO date)
+  gender?: JenisKelaminShort;           // Jenis kelamin (L/P)
+  phoneNumber?: string;                 // No Telp utama
+  insuranceType?: JenisAsuransiType;    // Jenis Asuransi
+  religion?: AgamaType;                 // Agama
+  maritalStatus?: string;               // Status Pernikahan
+  addressProvinceId?: string;           // ID Provinsi
+  addressProvinceName?: string;         // Nama Provinsi
+  addressRegencyId?: string;            // ID Kabupaten
+  addressRegencyName?: string;          // Nama Kabupaten
+  addressDistrictId?: string;           // ID Kecamatan
+  addressDistrictName?: string;         // Nama Kecamatan
+  addressVillageId?: string;            // ID Desa
+  addressVillageName?: string;          // Nama Desa
+  addressDetail?: string;               // Detail alamat (RT/RW, no rumah, dll)
+  guarantorName?: string;               // Nama penanggung jawab
+  guarantorRelationship?: string;       // Hubungan penanggung jawab
+  guarantorPhone?: string;              // Nomor HP penanggung jawab
+  extraDocuments?: string[];            // URLs to uploaded documents (KTP/BPJS, etc.)
+  
   createdAt: string;                    // ISO timestamp
   updatedAt: string;                    // ISO timestamp
 }
@@ -146,6 +218,65 @@ export interface VisitPrescription {
   totalPrice?: number;    // qty × pricePerUnit (for billing)
 }
 
+// ============================================
+// VISIT EXAMINATION TYPES
+// ============================================
+
+export type ConsciousnessLevel =
+  | 'COMPOS_MENTIS'
+  | 'APATIS'
+  | 'DELIRIUM'
+  | 'SOMNOLEN'
+  | 'SOPOR'
+  | 'SEMI_KOMA'
+  | 'KOMA';
+
+export interface VisitExam {
+  // Meta
+  examDate: string;        // ISO date-time; default = now when first created
+  doctorId: string;        // Dokter yang memeriksa
+  nurseId: string;         // Perawat/Bidan yang memeriksa
+
+  // Vital signs
+  tempC?: number;          // Suhu (°C)
+  respiratoryRate?: number; // RR (breaths/min)
+  bloodPressureSys?: number; // Sistolik
+  bloodPressureDia?: number; // Diastolik
+  spo2?: number;           // Saturasi O2 (%)
+  heartRate?: number;      // Nadi (beats/min)
+
+  // GCS – Glasgow Coma Scale
+  gcsEye?: 1 | 2 | 3 | 4;             // E
+  gcsVerbal?: 1 | 2 | 3 | 4 | 5;      // V
+  gcsMotor?: 1 | 2 | 3 | 4 | 5 | 6;   // M
+  gcsTotal?: number;                  // auto-computed: E+V+M
+
+  // Anthropometrics & allergies
+  heightCm?: number;       // Tinggi badan (cm)
+  weightKg?: number;       // Berat badan (kg)
+  allergies?: string;      // Alergi
+
+  // Level of consciousness (descriptive)
+  consciousnessLevel?: ConsciousnessLevel;
+
+  // SOAP + KIE
+  subjective?: string;     // Subject
+  objective?: string;      // Object
+  assessment?: string;     // Asesmen
+  plan?: string;           // Plan
+  kie?: string;            // KIE
+
+  // Penunjang (supporting investigations)
+  penunjangLabRequested?: boolean;      // Laboratorium
+  penunjangRadioRequested?: boolean;    // Radiologi
+  penunjangOtherRequested?: boolean;    // Lainnya
+  penunjangOtherText?: string;          // Keterangan Lainnya
+
+  // Diagnosis
+  diagnosis?: string;            // Diagnosa Utama (required in form)
+  diagnosisSecondary?: string;   // Diagnosa Tambahan (optional)
+}
+
 export interface Visit {
   id: string;                 // Firestore doc id
   patientId: string;          // reference to patients.id
@@ -166,6 +297,7 @@ export interface Visit {
   dispensationTime?: string;  // when obat given
   farmasiUserId?: string;
   createdByUserId: string;    // who created the visit (IGD user)
+  exam?: VisitExam;           // NEW: Data Pemeriksaan for this visit
   createdAt: string;
   updatedAt: string;
 }
@@ -174,7 +306,7 @@ export interface Visit {
 // USER TYPES
 // ============================================
 
-export type UserRole = "admin" | "igd" | "kasir" | "farmasi";
+export type UserRole = "admin" | "igd" | "kasir" | "farmasi" | "resepsionis" | "lab" | "radiologi";
 
 export interface AppUser {
   id: string;           // Firebase auth uid
@@ -259,6 +391,34 @@ export interface Drug {
 }
 
 // ============================================
+// DRUG PURCHASE TYPES (PEMBELIAN OBAT)
+// ============================================
+
+export interface DrugPurchaseItem {
+  drugId: string;          // Firestore doc id of drug
+  drugCode: string;        // Custom drug ID (e.g., "DRG-001")
+  drugName: string;        // Nama obat
+  quantity: number;        // Jumlah yang dibeli
+  unit: string;            // Satuan (Tablet, Kapsul, dll)
+  unitPrice: number;       // Harga satuan saat pembelian
+  subtotal: number;        // quantity * unitPrice
+}
+
+export interface DrugPurchase {
+  id: string;              // Firestore doc id
+  supplierName: string;    // Nama supplier
+  purchaseDate: string;    // Tanggal pembelian (ISO string)
+  invoiceUrl: string;      // Firebase Storage URL of uploaded nota
+  invoiceFileName?: string;// Original filename for display
+  items: DrugPurchaseItem[];
+  totalAmount: number;     // Sum of all subtotals
+  notes?: string;          // Catatan tambahan (optional)
+  createdAt: string;       // ISO timestamp
+  createdBy: string;       // UID of user who created
+  updatedAt?: string;      // ISO timestamp
+}
+
+// ============================================
 // SERVICE PRICING TYPES (TARIF LAYANAN)
 // ============================================
 
@@ -321,5 +481,58 @@ export interface RoomPrice {
   description?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// ============================================
+// LAB ORDER TYPES
+// ============================================
+
+import type { LabTestGroupId, LabTestId } from "./lab-tests";
+
+export type LabOrderStatus = "REQUESTED" | "COMPLETED";
+
+export interface LabTestSelection {
+  testId: LabTestId;
+  groupId: LabTestGroupId;
+  label: string;
+}
+
+export interface LabOrder {
+  id: string;              // use visitId as id (1 lab order per visit)
+  visitId: string;
+  patientId: string;
+  createdAt: string;
+  createdBy?: string;      // uid of lab user (optional for now)
+  updatedAt?: string;      // ISO timestamp when last updated
+  updatedBy?: string;      // uid of user who last updated
+  status: LabOrderStatus;
+  tests: LabTestSelection[]; // only the checked tests
+}
+
+// ============================================
+// RADIOLOGY ORDER TYPES
+// ============================================
+
+import type { RadiologyTestGroupId, RadiologyTestId } from "./radiology-tests";
+
+export type RadiologyOrderStatus = "REQUESTED" | "COMPLETED";
+
+export interface RadiologyTestSelection {
+  testId: RadiologyTestId;
+  groupId: RadiologyTestGroupId;
+  label: string;
+  side?: "R" | "L";       // for items that have R / L option (hasSide: true)
+}
+
+export interface RadiologyOrder {
+  id: string;              // use visitId as id (1 radiology order per visit)
+  visitId: string;
+  patientId: string;
+  createdAt: string;
+  createdBy?: string;      // uid of radiologi user (optional for now)
+  updatedAt?: string;      // ISO timestamp when last updated
+  updatedBy?: string;      // uid of user who last updated
+  status: RadiologyOrderStatus;
+  tests: RadiologyTestSelection[]; // only the checked tests
 }
 
