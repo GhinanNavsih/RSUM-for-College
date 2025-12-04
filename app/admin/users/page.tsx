@@ -97,6 +97,9 @@ export default function AdminUsersPage() {
       igd: 'bg-blue-100 text-blue-800',
       kasir: 'bg-green-100 text-green-800',
       farmasi: 'bg-orange-100 text-orange-800',
+      resepsionis: 'bg-teal-100 text-teal-800',
+      lab: 'bg-cyan-100 text-cyan-800',
+      radiologi: 'bg-indigo-100 text-indigo-800',
     };
     return colors[role] || 'bg-gray-100 text-gray-800';
   };
